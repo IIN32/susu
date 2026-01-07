@@ -1,5 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../database/database_helper.dart';
+import './signupScreen.dart';
+import '../home/homeScreens.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,71 +12,121 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final username = TextEditingController();
+  final password = TextEditingController();
+  bool isVisible = false;
+  //Form global key
   final formKey = GlobalKey<FormState>();
-  bool showPassword = false;
-  //Get user input
-  dynamic userName='';
-  dynamic passWord='';
-  dynamic defaultuserName="Ibrahim";
-  dynamic defaultpassWord="Susu@22";
   @override
   Widget build(BuildContext context) {
-    return Form(key: formKey, child: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(30),
-          child: Image.asset('assets/images/fedco.png',width: 80, height: 60,),
-        ),
-        const Text(
-          'susu',
-        ),
-        TextFormField(
-          decoration: const InputDecoration(
-            labelText: 'Email',
-            prefixIcon: Icon(Icons.person_2_rounded,color: Colors.brown),
-            border: OutlineInputBorder(),
+    return Scaffold(
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  Image.asset('assets/images/fedco.png', width: 80, height: 60),
+                  //Username
+                  Container(
+                    margin: const EdgeInsets.all(8),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.brown.withOpacity(.3)),
+                    child: TextFormField(
+                      controller: username,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return "Username is required";
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                          icon: Icon(Icons.person),
+                          border: InputBorder.none,
+                          hintText: 'Username',
+                        )),
+                  ),
+                  //Login
+                  Container(
+                    margin: const EdgeInsets.all(8),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.brown.withOpacity(.3)),
+                    child: TextFormField(
+                      controller: password,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return "Password is required";
+                          }
+                          return null;
+                        },
+                        obscureText: !isVisible,
+                        decoration: InputDecoration(
+                            icon: const Icon(Icons.lock),
+                            border: InputBorder.none,
+                            hintText: 'Password',
+                            suffixIcon: IconButton(
+                                onPressed: () {
+                                  //Password visibility
+                                  setState(() {
+                                    isVisible = !isVisible;
+                                  });
+                                },
+                                icon: Icon(isVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off)))),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  //Button
+                  Container(
+                      height: 50,
+                      width: MediaQuery.of(context).size.width * .9,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.brown),
+                      child: TextButton(
+                          onPressed: () {
+                            if(formKey.currentState!.validate()){
+                              //Login method
+                              DatabaseHelper().checkUser(username.text, password.text).then((isLogin){
+                                if(isLogin){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> const HomeScreen()));
+                                }else{
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Login Failed. Invalid username or password.")));
+                                }
+                              });
+                            }
+                          },
+                          child: const Text(
+                            "LOGIN",
+                            style: TextStyle(color: Colors.white),
+                          ))),
+                  //Signup
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Don't have an account?"),
+                      TextButton(onPressed: () {
+                        //Navigate to signup
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=> const Signup()));
+                      }, child: const Text("SIGN UP"))
+                    ],
+                  )
+                ],
+              ),
+            ),
           ),
-          validator: (value) {
-            if (value!.isEmpty) {
-              return 'Please enter your username';
-            }
-            return null;
-          },
-          onChanged: (value) => userName = value,
         ),
-        TextFormField(
-          obscureText: showPassword,
-          decoration: InputDecoration(
-            labelText: 'Password',
-            prefixIcon: const Icon(Icons.person_2_rounded,color: Colors.brown),
-            suffixIcon: IconButton(
-                onPressed: (){
-              setState(() {
-                showPassword=!showPassword;
-              });
-            },
-                icon: Icon(showPassword ? Icons.visibility : Icons.visibility_off),),
-            border: const OutlineInputBorder(),
-          ),
-          validator: (value) {
-            if (value!.isEmpty && value.length<8) {
-              return 'Please enter a password greater or equal to 8 characters.';
-            }
-            return null;
-          },
-          onSaved: (value) => userName = value,
-        ),
-        ElevatedButton(onPressed: (){
-          if(formKey.currentState!.validate()){
-            formKey.currentState!.save();
-            //Calling the login
-            if (kDebugMode) {
-              print('Email: $userName, Password: $passWord');
-            }
-          }
-        },
-            child: const Text('Login'),
-        ),
-      ],),);
+      ),
+    );
   }
 }
