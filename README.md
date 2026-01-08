@@ -58,4 +58,4 @@ A robust Flutter application for managing Susu savings groups, contributions, an
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-*Copyright © 2025 FedCo*
+*Copyright © 2025 Kab*
